@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal To-Do List</title>
+  <style>
+    /* Basic Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: #030303;
+    }
+
+    .todo-container {
+      width: 100%;
+      max-width: 500px;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #000000;
+      margin-bottom: 20px;
+    }
+
+    .todo-input {
+      width: calc(100% - 20px);
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .add-button, .export-button {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .add-button:hover{
+        transition: scale(1rem);
+        box-shadow: 0 0 20px #64a9f2;
+    }
+
+    .export-button {
+      background-color: #35af52;
+    }
+
+     .export-button:hover {
+      background-color: #299838;
+      box-shadow: 0  0 20px #49e66e;
+      transition: scale(1rem);
+    }
+
+    .todo-list {
+      list-style-type: none;
+    }
+
+    .todo-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background-color: #fafafa;
+      border-bottom: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .todo-item.completed {
+      text-decoration: line-through;
+      color: #777;
+    }
+
+    .todo-item.incomplete {
+      color: red;
+    }
+
+    .todo-item button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .incomplete-button {
+      color: #ff0000;
+    }
+
+    .complete-button {
+      color: #28a745;
+      margin-right: 10px;
+    }
+    #completion-message {
+        display: none; 
+        text-align: center;
+        margin-top: 20px;
+        font-size: 16px;
+        color: #ece4e4;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 5px;
+        margin-left: 3rem;
+      }
+      
+      #completion-message::before {
+        content: " "; 
+        display: block;
+        height: 10px;
+      }
+      
+      #completion-message.success {
+        color: green; 
+      }
+      
+      #completion-message.warning {
+        color: orange;
+      }
+      
+      #completion-message.error {
+        color: red; 
+      }
+      
+  </style>
+</head>
+<body>
+  <div class="todo-container">
+    <h1>To-Do List</h1>
+    <input type="text" id="todo-input" class="todo-input" placeholder="Enter a new task...">
+    <button class="add-button" onclick="addTodo()">Add Task</button>
+    <button class="export-button" onclick="exportToExcel()">Export to Excel</button>
+    <ul id="todo-list" class="todo-list"></ul>
+  </div>
+  <div id="completion-message"></div>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  <script>
+    let tasks = [];
+
+function addTodo() {
+  const todoInput = document.getElementById('todo-input');
+  const todoList = document.getElementById('todo-list');
+  const taskText = todoInput.value.trim();
+
+  if (taskText === '') {
+    alert("Please enter a task!");
+    return;
+  }
+
+  const todoItem = document.createElement('li');
+  todoItem.className = 'todo-item';
+  const task = {
+    text: taskText,
+    status: "Incomplete",
+    date: new Date().toLocaleDateString()
+  };
+  tasks.push(task);
+
+  const taskTextElement = document.createElement('span');
+  taskTextElement.textContent = taskText;
+  todoItem.appendChild(taskTextElement);
+
+  const completeButton = document.createElement('button');
+  completeButton.className = 'complete-button';
+  completeButton.innerHTML = '✓';
+  completeButton.onclick = () => toggleComplete(todoItem, task, taskTextElement);
+  todoItem.appendChild(completeButton);
+
+  const incompleteButton = document.createElement('button');
+  incompleteButton.className = 'incomplete-button';
+  incompleteButton.innerHTML = '✗';
+  incompleteButton.onclick = () => toggleIncomplete(todoItem, task, taskTextElement);
+  todoItem.appendChild(incompleteButton);
+
+  todoList.appendChild(todoItem);
+  todoInput.value = '';
+}
+
+function toggleComplete(todoItem, task, taskTextElement) {
+  if (!todoItem.classList.contains('completed')) {
+    todoItem.classList.add('completed');
+    taskTextElement.style.textDecoration = 'line-through';
+    task.status = "Complete"; // Update task status
+  }
+}
+
+function toggleIncomplete(todoItem, task, taskTextElement) {
+  if (!todoItem.classList.contains('incomplete')) {
+    todoItem.classList.add('incomplete');
+    taskTextElement.style.color = 'red'; // Change text color to red
+    task.status = "Incomplete"; // Update task status
+  } else {
+    todoItem.classList.remove('incomplete');
+    taskTextElement.style.color = ''; // Reset text color
+    task.status = "Complete"; // Update task status back to complete
+  }
+}
+
+function exportToExcel() {
+  const worksheet = XLSX.utils.json_to_sheet(tasks);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Tasks");
+  XLSX.writeFile(workbook, "ToDo_List.xlsx");
+}
+function exportToExcel() {
+    const worksheet = XLSX.utils.json_to_sheet(tasks);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tasks");
+    XLSX.writeFile(workbook, "ToDo_List.xlsx");
+  
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(task => task.status === "Complete").length;
+    const percentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+  
+
+    const messageElement = document.getElementById('completion-message');
+    messageElement.style.display = 'inline';
+    messageElement.textContent = `You have completed ${percentage.toFixed(2)}% of your tasks.`;
+  
+    if (percentage < 50) {
+      messageElement.textContent = " Oops, you had a bad day today!";
+    }
+  }
+  
+  </script>
+</body>
+</html>
