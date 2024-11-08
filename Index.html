@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Personal To-Do List</title>
   <style>
-    /* Basic Reset */
+  
     * {
       box-sizing: border-box;
       margin: 0;
@@ -200,19 +200,19 @@ function toggleComplete(todoItem, task, taskTextElement) {
   if (!todoItem.classList.contains('completed')) {
     todoItem.classList.add('completed');
     taskTextElement.style.textDecoration = 'line-through';
-    task.status = "Complete"; // Update task status
+    task.status = "Complete";
   }
 }
 
 function toggleIncomplete(todoItem, task, taskTextElement) {
   if (!todoItem.classList.contains('incomplete')) {
     todoItem.classList.add('incomplete');
-    taskTextElement.style.color = 'red'; // Change text color to red
-    task.status = "Incomplete"; // Update task status
+    taskTextElement.style.color = 'red'; 
+    task.status = "Incomplete";
   } else {
     todoItem.classList.remove('incomplete');
-    taskTextElement.style.color = ''; // Reset text color
-    task.status = "Complete"; // Update task status back to complete
+    taskTextElement.style.color = '';
+    task.status = "Complete"; 
   }
 }
 
